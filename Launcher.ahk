@@ -1,8 +1,3 @@
-Run(path)
-{
-    Run %path%
-}
-
 ; DWIM function for command prompts
 Prompt(title, path)
 {
@@ -10,34 +5,34 @@ Prompt(title, path)
 }
 
 ;;; Notification
-CleanNotification()
-{
-    ; ToolTip
-    Progress, off
-}
+; CleanNotification()
+; {
+;     ; ToolTip
+;     Progress(off)
+; }
 
 Notify(text)
 {
-    SysGet, Area, MonitorWorkArea
-    Y := AreaBottom-128
-    Progress, hide Y%Y% W1000 b zh0 cwFFFFFF FM16 CT00BB00,, %text%, AutoHotKeyProgressBar, Backlash BRK
-    WinSet, TransColor, FFFFFF 255, AutoHotKeyProgressBar
-    Progress, show
-    SetTimer, CleanNotification, -2000
+    ; SysGet(Area, MonitorWorkArea)
+    ; Y := AreaBottom-128
+    ; Progress(hide Y%Y% W1000 b zh0 cwFFFFFF FM16 CT00BB00,, %text%, AutoHotKeyProgressBar, Backlash BRK)
+    ; WinSet(TransColor, FFFFFF 255, AutoHotKeyProgressBar)
+    ; Progress(show)
+    ; SetTimer(CleanNotification, -2000)
 }
 
 ; DWIM function to activate, launch, or minimize a window. Activates window with
 ; matching title if it exists or launches program if it doesn't exists and
 ; forces activation. Minimizes window if already active (use as toggle).
-Launch(title, path, WorkDir:=false, DetectHidden:=false)
+Launch(title, path, WorkDir:="", DetectHidden:=False)
 {
-    DetectHiddenWindows, %DetectHidden%
-    IfWinExist %title%
+    DetectHiddenWindows DetectHidden
+    if WinExist(title)
     {
-        IfWinActive
+        If WinActive()
         {
-            WinGet, out, MinMax, %title%
-            IfEqual, out, -1
+            out := WinGetMinMax(title)
+            If (out = -1)
             {
                 Notify("Restore " . title)
                 WinRestore ; store if minimized
@@ -50,8 +45,8 @@ Launch(title, path, WorkDir:=false, DetectHidden:=false)
         }
         Else
         {
-            WinGet, out, MinMax, %title%
-            IfEqual, out, -1
+            out := WinGetMinMax(title)
+            If (out != -1)
             {
                 Notify("Restore " . title)
                 WinRestore ; restore if minimized
@@ -60,18 +55,17 @@ Launch(title, path, WorkDir:=false, DetectHidden:=false)
             WinActivate ; bring to front
         }
     }
-    Else
+    else
     {
         Notify("Launching " . path)
-        WinActivate, ahk_class Shell_TrayWnd ; workaround to prevent window to open in background
-        Run, %path%, %WorkDir%
-        WinWait, %title%
-        WinActivate
-        WinWait, %title%
-        ToolTip
-        ; RestoreActive()
+        WinActivate("ahk_class Shell_TrayWnd") ; workaround to prevent window to open in background
+        Run path, WorkDir
+        WinWait(title)
+        WinActivate()
+        WinWait(title)
+        ToolTip()
     }
-    DetectHiddenWindows, Off
+    DetectHiddenWindows False
 }
 
 ;; Examples:
